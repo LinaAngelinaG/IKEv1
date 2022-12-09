@@ -47,7 +47,9 @@ public interface Generating {
         }
     };
     public default void generate(String filename, String hashVal, String algVal, String password)
-            throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, DecoderException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+            throws IOException, NoSuchPaddingException, NoSuchAlgorithmException,
+            DecoderException, InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
         PrintWriter file = getFileStream(hashVal,algVal,password);
         if(filename.isEmpty()){
             generateWithDefaultData(file, hashVal, algVal, password);
@@ -94,27 +96,27 @@ public interface Generating {
         return prf(SKEYID, Hex.decodeHex(SKa+s+"02"), hashVal);
     }
 
-    private String prf(byte[] key, byte[] text, String hashVal)
+    static String prf(byte[] key, byte[] text, String hashVal)
             throws NoSuchAlgorithmException, InvalidKeyException {
        return countPRF(key,text,hashVal);
     }
-    private String prf(String key, byte[] text, String hashVal)
+    static String prf(String key, byte[] text, String hashVal)
             throws NoSuchAlgorithmException, DecoderException, InvalidKeyException {
         byte[] keyn = Hex.decodeHex(key);
         return countPRF(keyn,text,hashVal);
     }
-    private String prf(byte[] key, String text, String hashVal)
+    static String prf(byte[] key, String text, String hashVal)
             throws NoSuchAlgorithmException, DecoderException, InvalidKeyException {
         byte[] textn = Hex.decodeHex(text);
         return countPRF(key,textn,hashVal);
     }
-    private String prf(String key, String text, String hashVal)
+    static String prf(String key, String text, String hashVal)
             throws NoSuchAlgorithmException, DecoderException, InvalidKeyException {
         byte[] keyn = Hex.decodeHex(key);
         byte[] textn = Hex.decodeHex(text);
         return countPRF(keyn,textn,hashVal);
     }
-    private String countPRF(byte[] key, byte[] text, String hashVal)
+    private static String countPRF(byte[] key, byte[] text, String hashVal)
             throws NoSuchAlgorithmException, InvalidKeyException {
         if(hashVal.equals("md5")){
             SecretKeySpec secretKeySpec = new SecretKeySpec(key, "HmacMD5");
@@ -160,7 +162,6 @@ public interface Generating {
                 charToDivide;
     }
     private void generateWithDataFromFile(PrintWriter file, String filename, String hashVal, String algVal, String password){
-
     }
     private String gainEnc(String data, String password, String iv, String algo)
             throws NoSuchPaddingException,

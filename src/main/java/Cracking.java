@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import Generating.*;
 
 public interface Cracking {
     final static String D = "0123456789";
@@ -48,14 +49,6 @@ public interface Cracking {
     }
 
     private String getNextPassword(int[] passwordCur, String mask){
-//        let = len(password) - 1
-//        pas = password.copy()
-//        while let >= 0 and pas[let] == get_alph_len(mask[let]) - 1:
-//        pas[let] = 0
-//        let -= 1
-//        if let >= 0:
-//        pas[let] += 1
-//        return pas
         int last = passwordCur.length;
         while (last>=0 && passwordCur[last] == getAlphLength(mask.substring(last,last+1))-1){
             passwordCur[last]=0;
@@ -63,11 +56,17 @@ public interface Cracking {
         }
         if(last>=0)
             passwordCur[last]+=1;
-        
+        return getPasswordFromMask(passwordCur,mask);
     }
 
     private boolean checkEqCountDec(Map<String, String> connectionData, String passwordCur){
-
+//        String SKEYID = Generating.prf(password, FIXED_DATA.get("Ni")+ FIXED_DATA.get("Nr"), hashVal);
+//        String nonce = gainNonce();
+//        String hashI = prf(SKEYID,nonce,hashVal);
+//        String SKEYIDe = countSKEYIDe(SKEYID, hashVal);
+//        String iv = prf(SKEYIDe, FIXED_DATA.get("gx")+ FIXED_DATA.get("gy"), hashVal);
+//        String key = countKeyForEncryption(SKEYIDe,hashVal,algVal);
+//        String Ek = gainEnc(FIXED_DATA.get("IDi")+hashI,key,iv,algVal);
     }
 
     private String getPasswordFromMask(int[] maskValues, String mask){
