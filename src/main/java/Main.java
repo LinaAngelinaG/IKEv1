@@ -16,9 +16,9 @@ public class Main {
         String s2 = "vd";
         String s3 = s +s2;
         //System.out.println(s3);
-        String pass = Hex.encodeHexString("ad199".getBytes(StandardCharsets.US_ASCII));
+        String pass = Hex.encodeHexString("Qwerty123".getBytes());
         System.out.println(pass);
         Generating.generate("","md5","aes128",pass);
-        Cracking.crack("dict.txt","ddd","md5_aes128_6164313939.txt");
+        Cracking.crack("dict.txt","ddd","crackTEST.txt");
     }
 }

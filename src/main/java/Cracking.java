@@ -40,12 +40,19 @@ public interface Cracking {
         Scanner dictionary = new Scanner(new File(dictFilename));
         String wordFromDict = getNextWordFromDict(dictionary);
         String finish = getPasswordFromMask(maskValues,mask);
+        int print = 2028;
+        int counter = 0;
         while(true){
             if(checkEqCountDec(connectionData,wordFromDict+passwordCur)){
                 String passwordFound = new String(Hex.decodeHex(wordFromDict+passwordCur), StandardCharsets.US_ASCII);
                 System.out.println("Password was found:: "+passwordFound);
                 return;
             }
+            if(counter==print) counter = 0;
+            if(counter == 0){
+                System.out.println("FROM  "+ new String(Hex.decodeHex(wordFromDict+passwordCur), StandardCharsets.US_ASCII));
+            }
+            ++counter;
             passwordCur = getNextPassword(maskValues,mask);
             if(finish.equals(passwordCur)){
                 if(dictionary.hasNext()){
@@ -81,25 +88,29 @@ public interface Cracking {
         String hashVal = connectionData.get("HashId");
         String algVal = connectionData.get("AlgId");
         String SKEYID = Generating.prf(passwordCur, connectionData.get("Ni")+ connectionData.get("Nr"), hashVal);
-        String SKEYIDe = Generating.countSKEYIDe(SKEYID, hashVal);
+        String nonceSKe = connectionData.get("gxy")+connectionData.get("Ci")+connectionData.get("Cr");
+        String SKEYIDe = Generating.countSKEYIDe(SKEYID, hashVal, nonceSKe);
         String iv = Generating.hashing(hashVal, connectionData.get("gx")+ connectionData.get("gy"));
+        iv = algVal.equals("3des")? iv.substring(0,16):iv.substring(0,32);
         String key = Generating.countKeyForEncryption(SKEYIDe,hashVal,algVal);
         String decryptedData = Generating.gainEnc(connectionData.get("Ek"), key,iv, algVal,"dec");
         if(!decryptedData.equals("00")){
-            String id = decryptedData.substring(0,8);
-            String hashI = decryptedData.substring(8);
-            String nonce = gainNonce(connectionData,id);
+            String id = decryptedData.substring(0,24);
+            int end = hashVal.equals("md5")?32:40;
+            String hashI = decryptedData.substring(32,32+end);
+            String nonce = gainNonce(connectionData,id.substring(8));
             String countHashI = Generating.prf(SKEYID,nonce,hashVal);
+            //System.out.println(countHashI.length()+ "   "+hashI.length()+"   "+id.length());
             return countHashI.equals(hashI);
         }
         return false;
     }
 
     private static String gainNonce(Map<String, String> data, String id){
-        return data.get("gy")+
-                data.get("gx")+
-                data.get("Cr")+
+        return data.get("gx")+
+                data.get("gy")+
                 data.get("Ci")+
+                data.get("Cr")+
                 data.get("SAi")+
                 id;
     }

@@ -44,7 +44,7 @@ public interface Generating {
             put("gy","2dc4685effd8b4e7a8ae5580ecbee1740ea76ebe68821bd26f2ce7eddf827d1ab19d2261a62ae611abf8409ff2b9012895a5d45735523ed65f69625fbfb108d03782b3e1eec7d3c6fa9f2cf89e2bc5c48e32bc0e2fca28fbaf441247538ec83beb79f70c3bd5e06794b7e843d9e9ef11e9f5c578b656a0cf0a51fa84f00f8a7a");
             put("gxy","4169e27b7236aa159e5f036f953f52c7ead117651ab7727a99e7305287f3f975f282e019bfc0a893a55379b51cb3de3df16ade45e9b5c3829f2284ef1b4bc111370d63d20a53b2849c3ee20662db882bf8192a28bedb7ae50cb019e35356d234a5ccf27880311d14a7580640233935f2a6e7264e389c0ae17beb364528af9f9f");
             put("SAi","00000001000000010000002c000100010000002400010000800b0001800c0e1080010007800e0080800200028003000180040002");
-            put("IDi","232d0111");
+            put("IDi","01110000c0a80c02");
         }
     };
     public static void generate(String filename, String hashVal, String algVal, String password)
@@ -77,8 +77,9 @@ public interface Generating {
         String SKEYID = prf(password, FIXED_DATA.get("Ni")+ FIXED_DATA.get("Nr"), hashVal);
         String nonce = gainNonce();
         String hashI = prf(SKEYID,nonce,hashVal);
-        String SKEYIDe = countSKEYIDe(SKEYID, hashVal);
+        String SKEYIDe = countSKEYIDe(SKEYID, hashVal,FIXED_DATA.get("gxy")+ FIXED_DATA.get("Ci")+ FIXED_DATA.get("Cr"));
         String iv = hashing(hashVal,FIXED_DATA.get("gx")+ FIXED_DATA.get("gy"));
+        iv = algVal.equals("3des")? iv.substring(0,16):iv.substring(0,32);
         String key = countKeyForEncryption(SKEYIDe,hashVal,algVal);
         System.out.println("KEY::   "+key);
         System.out.println("IV::   "+iv);
@@ -88,15 +89,13 @@ public interface Generating {
             throws DecoderException, NoSuchAlgorithmException, InvalidKeyException {
         String k1 = prf(skeyiDe,"00",hashVal);
         String k2 = prf(skeyiDe, k1,hashVal);
-        String k3 = prf(skeyiDe, k2, hashVal);
-        return (k1+k2+k3).substring(0,BYTES_IN_KEY.get(encVal)*2);
+        return (k1+k2).substring(0,BYTES_IN_KEY.get(encVal)*2);
     }
-    static String countSKEYIDe(String SKEYID, String hashVal)
+    static String countSKEYIDe(String SKEYID, String hashVal, String nonce)
             throws DecoderException, NoSuchAlgorithmException, InvalidKeyException {
-        String s = FIXED_DATA.get("gxy")+ FIXED_DATA.get("Ci")+ FIXED_DATA.get("Cr");
-        String SKd = prf(SKEYID, Hex.decodeHex(s+"00"), hashVal);
-        String SKa = prf(SKEYID, Hex.decodeHex(SKd+s+"01"), hashVal);
-        return prf(SKEYID, Hex.decodeHex(SKa+s+"02"), hashVal);
+        String SKd = prf(SKEYID, Hex.decodeHex(nonce+"00"), hashVal);
+        String SKa = prf(SKEYID, Hex.decodeHex(SKd+nonce+"01"), hashVal);
+        return prf(SKEYID, Hex.decodeHex(SKa+nonce+"02"), hashVal);
     }
     static String prf(byte[] key, byte[] text, String hashVal)
             throws NoSuchAlgorithmException, InvalidKeyException {
@@ -124,7 +123,6 @@ public interface Generating {
             dig = MessageDigest.getInstance("MD5");
         else
             dig = MessageDigest.getInstance("SHA1");
-        dig.update(Hex.decodeHex(input));
         return Hex.encodeHexString(dig.digest());
     }
     private static String countPRF(byte[] key, byte[] text, String hashVal)
@@ -143,10 +141,10 @@ public interface Generating {
         }
     }
     private static String gainNonce(){
-        return FIXED_DATA.get("gy")+
-                FIXED_DATA.get("gx")+
-                FIXED_DATA.get("Cr")+
+        return FIXED_DATA.get("gx")+
+                FIXED_DATA.get("gy")+
                 FIXED_DATA.get("Ci")+
+                FIXED_DATA.get("Cr")+
                 FIXED_DATA.get("SAi")+
                 FIXED_DATA.get("IDi");
     }
